@@ -1,8 +1,9 @@
+import { Armazenador } from "./Armazenador.js";
 import { TipoTransacao } from "./TipoTransacao.js";
 export class Conta {
     nome;
-    saldo = JSON.parse(localStorage.getItem("saldo")) || 0;
-    transacoes = JSON.parse(localStorage.getItem("transacoes"), (key, value) => {
+    saldo = Armazenador.obter("saldo") || 0;
+    transacoes = Armazenador.obter("transacoes", (key, value) => {
         if (key === "data") {
             return new Date(value);
         }
@@ -10,6 +11,15 @@ export class Conta {
     }) || [];
     constructor(nome) {
         this.nome = nome;
+    }
+    getTitular() {
+        return this.nome;
+    }
+    getSaldo() {
+        return this.saldo;
+    }
+    getDataAcesso() {
+        return new Date();
     }
     debitar(valor) {
         if (valor <= 0) {
@@ -19,14 +29,14 @@ export class Conta {
             throw new Error("Saldo insuficiente!");
         }
         this.saldo -= valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.salvar("saldo", this.saldo.toString());
     }
     depositar(valor) {
         if (valor <= 0) {
             throw new Error("O valor a ser depositado deve ser maior que zero!");
         }
         this.saldo += valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.salvar("saldo", this.saldo.toString());
     }
     getGruposTransacoes() {
         const gruposTransacoes = [];
@@ -46,12 +56,6 @@ export class Conta {
         }
         return gruposTransacoes;
     }
-    getSaldo() {
-        return this.saldo;
-    }
-    getDataAcesso() {
-        return new Date();
-    }
     registrarTransacao(novaTransacao) {
         if (novaTransacao.tipo == TipoTransacao.DEPOSITO) {
             this.depositar(novaTransacao.valor);
@@ -64,7 +68,7 @@ export class Conta {
             throw new Error("Tipo de Transação é inválido!");
         }
         this.transacoes.push(novaTransacao);
-        localStorage.setItem("transacoes", JSON.stringify(this.transacoes));
+        Armazenador.salvar("transacoes", this.transacoes);
     }
 }
 const conta = new Conta("Daniel Salles Batista");

@@ -1,11 +1,12 @@
+import { Armazenador } from "./Armazenador.js";
 import { GrupoTransacao } from "./GrupoTransacao.js";
 import { TipoTransacao } from "./TipoTransacao.js";
 import { Transacao } from "./Transacao.js";
 
 export class Conta {
-    nome: string;
-    saldo: number = JSON.parse(localStorage.getItem("saldo")) || 0;
-    transacoes: Transacao[] = JSON.parse(localStorage.getItem("transacoes"), (key: string, value: any) => {
+    protected nome: string;
+    protected saldo: number = Armazenador.obter("saldo") || 0;
+    private transacoes: Transacao[] = Armazenador.obter("transacoes", (key: string, value: any) => {
         if (key === "data") {
             return new Date(value);
         }
@@ -17,7 +18,19 @@ export class Conta {
         this.nome = nome;
     }
 
-    debitar(valor: number): void {
+    public getTitular() : string {
+        return this.nome;
+    }
+
+    public getSaldo() : number {
+        return this.saldo;
+    }
+
+    public getDataAcesso() : Date {
+        return new Date();
+    }
+
+    private debitar(valor: number): void {
         if (valor <= 0) {
             throw new Error("O valor a ser debitado deve ser maior que zero!");
         }
@@ -26,19 +39,19 @@ export class Conta {
         }
 
         this.saldo -= valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.salvar("saldo", this.saldo.toString());
     }
 
-    depositar(valor: number): void {
+    private depositar(valor: number): void {
         if (valor <= 0) {
             throw new Error("O valor a ser depositado deve ser maior que zero!");
         }
 
         this.saldo += valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.salvar("saldo", this.saldo.toString());
     }
 
-    getGruposTransacoes(): GrupoTransacao[] {
+    public getGruposTransacoes(): GrupoTransacao[] {
         const gruposTransacoes: GrupoTransacao[] = [];
         const listaTransacoes: Transacao[] = structuredClone(this.transacoes);
         const transacoesOrdenadas: Transacao[] = listaTransacoes.sort((t1, t2) => t2.data.getTime() - t1.data.getTime());
@@ -59,15 +72,7 @@ export class Conta {
         return gruposTransacoes;
     }
 
-    getSaldo() : number {
-        return this.saldo;
-    }
-
-    getDataAcesso() : Date {
-        return new Date();
-    }
-
-    registrarTransacao(novaTransacao: Transacao): void {
+    public registrarTransacao(novaTransacao: Transacao): void {
         if (novaTransacao.tipo == TipoTransacao.DEPOSITO) {
             this.depositar(novaTransacao.valor);
         } 
@@ -80,7 +85,7 @@ export class Conta {
         }
 
         this.transacoes.push(novaTransacao);
-        localStorage.setItem("transacoes", JSON.stringify(this.transacoes));
+        Armazenador.salvar("transacoes", this.transacoes);
     }
 }
 
