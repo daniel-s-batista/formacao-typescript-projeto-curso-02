@@ -1,10 +1,10 @@
-import Conta from "../types/Conta.js";
+import conta from "../types/Conta.js";
 import { FormatoData } from "../types/FormatoData.js";
 import { formatarMoeda, formatarData } from "../utils/formatters.js";
 const elementoRegistroTransacoesExtrato = document.querySelector(".extrato .registro-transacoes");
 renderizarExtrato();
 function renderizarExtrato() {
-    const gruposTransacoes = Conta.getGruposTransacoes();
+    const gruposTransacoes = conta.getGruposTransacoes();
     elementoRegistroTransacoesExtrato.innerHTML = "";
     let htmlRegistroTransacoes = "";
     for (let grupoTransacao of gruposTransacoes) {
@@ -13,7 +13,7 @@ function renderizarExtrato() {
             htmlTransacaoItem += `
                 <div class="transacao-item">
                     <div class="transacao-info">
-                        <span class="tipo">${transacao.tipoTransacao}</span>
+                        <span class="tipo">${transacao.tipo}</span>
                         <strong class="valor">${formatarMoeda(transacao.valor)}</strong>
                     </div>
                     <time class="data">${formatarData(transacao.data, FormatoData.DIA_MES)}</time>
